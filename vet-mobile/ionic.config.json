@@ -1,0 +1,7 @@
+{
+  "name": "vet-mobile",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue-vite"
+}
