@@ -1,2 +1,53 @@
-/* For information on how to create your own theme, please refer to:
-http://ionicframework.com/docs/theming/ */
+:root {
+  --ion-color-primary: #0D9488;
+  --ion-color-primary-rgb: 13, 148, 136;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #0f766e;
+  --ion-color-primary-tint: #14b8a6;
+
+  --ion-background-color: #f8fafc;
+  --ion-text-color: #0f172a;
+  --ion-card-background: #ffffff;
+  --ion-item-background: #ffffff;
+}
+
+/* Forzar modo claro general */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ion-background-color: #f8fafc !important;
+    --ion-text-color: #0f172a !important;
+  }
+
+  ion-content, ion-card, ion-list, ion-item, ion-modal {
+    --background: #ffffff !important;
+    --color: #0f172a !important;
+  }
+}
+
+/* =========================================================
+   SOLUCIÓN DE CONTRASTE PARA POPOVERS, ACTION-SHEETS Y ALERTS
+   ========================================================= */
+ion-action-sheet, ion-popover, ion-alert {
+  --background: #ffffff !important;
+}
+
+/* Texto e iconos visibles en las opciones emergentes */
+.action-sheet-button,
+.popover-viewport,
+.select-interface-option,
+.action-sheet-title,
+ion-select-popover ion-item,
+ion-select-popover ion-label {
+  --background: #ffffff !important;
+  --color: #0f172a !important;
+  color: #0f172a !important;
+  font-weight: 600 !important;
+  opacity: 1 !important;
+}
+
+/* Botón Cancelar */
+.action-sheet-button.action-sheet-cancel {
+  color: #dc2626 !important;
+  font-weight: 700 !important;
+}

@@ -1,0 +1,31 @@
+
+Paso 1
+git clone https://github.com/Gerardo-Colocho/Veterinaria.git
+
+Paso 2
+cd Veterinaria/vet-backend
+
+paso 3
+composer install
+
+Paso 4
+cp .env.example .env
+
+Fragmento de código
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=vet_db
+DB_USERNAME=root
+DB_PASSWORD=tu_contraseña_local
+Generar la llave de la aplicación:
+
+Paso 5
+php artisan key:generate
+
+
+Paso 6
+php artisan migrate:fresh --seed
+
+Paso 7
+php artisan serve

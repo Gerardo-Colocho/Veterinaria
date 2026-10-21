@@ -15,8 +15,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'rol',
-        'telefono',
+        'rol',       // <-- Permite asignar roles (admin, veterinario, cliente)
+        'telefono'
     ];
 
     protected $hidden = [
@@ -24,23 +24,8 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
-
-    // Relación: Un usuario tiene muchas mascotas
-    public function mascotas()
-    {
-        return $this->hasMany(Mascota::class);
-    }
-
-    // Relación: Un usuario puede tener muchas citas
-    public function citas()
-    {
-        return $this->hasMany(Cita::class);
-    }
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+    ];
 }

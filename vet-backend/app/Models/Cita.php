@@ -14,7 +14,8 @@ class Cita extends Model
         'mascota_id',
         'fecha_hora',
         'motivo',
-        'estado'
+        'estado',
+        'motivo_cancelacion' // <-- Agregado para permitir la justificación al cancelar
     ];
 
     public function cliente()

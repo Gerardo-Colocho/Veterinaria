@@ -7,27 +7,34 @@ use Illuminate\Http\Request;
 
 class MascotaController extends Controller
 {
+    // Listar mascotas del usuario autenticado
     public function index(Request $request)
     {
-        // El admin ve todas las mascotas, el cliente solo las suyas
-        if ($request->user()->rol === 'admin') {
-            return response()->json(Mascota::with('dueno')->get(), 200);
-        }
-        return response()->json($request->user()->mascotas, 200);
+        $userId = $request->user()->id;
+        $mascotas = Mascota::where('user_id', $userId)->get();
+
+        return response()->json($mascotas, 200);
     }
 
+    // Registrar una nueva mascota
     public function store(Request $request)
     {
         $fields = $request->validate([
-            'nombre' => 'required|string',
-            'especie' => 'required|string',
-            'raza' => 'nullable|string',
-            'edad_meses' => 'nullable|integer',
-            'peso' => 'nullable|numeric',
-            'foto_url' => 'nullable|string'
+            'nombre'  => 'required|string|max:255',
+            'especie' => 'required|string|max:100',
+            'raza'    => 'nullable|string|max:100',
+            'edad'    => 'nullable|numeric',
+            'peso'    => 'nullable|numeric',
         ]);
 
-        $mascota = $request->user()->mascotas()->create($fields);
+        $mascota = Mascota::create([
+            'user_id'    => $request->user()->id,
+            'nombre'     => $fields['nombre'],
+            'especie'    => $fields['especie'],
+            'raza'       => $fields['raza'] ?? null,
+            'edad_meses' => $fields['edad'] ?? null,
+            'peso'       => $fields['peso'] ?? null,
+        ]);
 
         return response()->json([
             'message' => 'Mascota registrada con éxito',
@@ -35,23 +42,18 @@ class MascotaController extends Controller
         ], 201);
     }
 
-    public function show(Mascota $mascota)
+    // Eliminar mascota
+    public function destroy(Request $request, $id)
     {
-        return response()->json($mascota->load('historiales', 'citas'), 200);
-    }
+        $mascota = Mascota::where('id', $id)
+            ->where('user_id', $request->user()->id)
+            ->first();
 
-    public function update(Request $request, Mascota $mascota)
-    {
-        $mascota->update($request->all());
-        return response()->json([
-            'message' => 'Mascota actualizada correctamente',
-            'mascota' => $mascota
-        ], 200);
-    }
+        if (!$mascota) {
+            return response()->json(['message' => 'Mascota no encontrada o no autorizada'], 404);
+        }
 
-    public function destroy(Mascota $mascota)
-    {
         $mascota->delete();
-        return response()->json(['message' => 'Mascota eliminada'], 200);
+        return response()->json(['message' => 'Mascota eliminada con éxito'], 200);
     }
 }

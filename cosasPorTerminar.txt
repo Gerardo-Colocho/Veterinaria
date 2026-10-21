@@ -1,0 +1,17 @@
+-fechas... no podes elegir como cliente el día, sino adaptarte a los días que el veterinario tiene completos o espacio para atender...
+
+-cancelar... a la hora de cancelar agregar un bloque de justificación... 
+
+-a la hora de escribir otro en la sección de elegir especie, agregar opción de poner la especie... 
+
+-Administrador administrar usuarios y roles... 
+
+-Agregar login al proyecto de laravel
+
+-Si el usuario registrado es rol de usuario final que se mande al panel de usuario final... sistema recreado en base al de ionic…
+
+-Modificar controlador al login de la aplicación de vue/laravel
+
+-sección de historiales agregar al sistema de vue/laravel
+
+-

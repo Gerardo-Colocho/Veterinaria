@@ -9,6 +9,8 @@ class Mascota extends Model
 {
     use HasFactory;
 
+    protected $table = 'mascotas';
+
     protected $fillable = [
         'user_id',
         'nombre',
@@ -16,21 +18,13 @@ class Mascota extends Model
         'raza',
         'edad_meses',
         'peso',
-        'foto_url'
+        'foto_url',
     ];
 
     public function dueno()
     {
-        return $this->belongsTo(User::class, 'user_id');
-    }
-
-    public function citas()
-    {
-        return $this->hasMany(Cita::class);
-    }
-
-    public function historiales()
-    {
-        return $this->hasMany(HistorialMedico::class);
+        return $this->belongsTo(User::class, 'user_id')->withDefault([
+            'name' => 'Usuario Desconocido'
+        ]);
     }
 }

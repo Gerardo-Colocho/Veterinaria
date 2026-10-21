@@ -11,16 +11,5 @@ class HistorialMedico extends Model
 
     protected $table = 'historial_medicos';
 
-    protected $fillable = [
-        'mascota_id',
-        'diagnostico',
-        'tratamiento',
-        'vacuna',
-        'fecha_atencion',
-    ];
-
-    public function mascota()
-    {
-        return $this->belongsTo(Mascota::class);
-    }
+    protected $guarded = [];
 }
