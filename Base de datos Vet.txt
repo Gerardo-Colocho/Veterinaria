@@ -17,7 +17,7 @@ DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_DATABASE=vet_db
 DB_USERNAME=root
-DB_PASSWORD=tu_contraseña_local
+DB_PASSWORD=
 Generar la llave de la aplicación:
 
 Paso 5
@@ -29,3 +29,10 @@ php artisan migrate:fresh --seed
 
 Paso 7
 php artisan serve
+
+
+Paso 8 (PARA MOBILE)
+
+npm install
+
+ionic serve
