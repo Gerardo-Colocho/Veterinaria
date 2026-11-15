@@ -15,14 +15,12 @@ class CitaController extends Controller
         return response()->json(Cita::where('user_id', $request->user()->id)->with('mascota')->get(), 200);
     }
 
-    // Nuevo método para consultar qué horas están libres en un día específico
     public function consultarDisponibilidad(Request $request)
     {
         $request->validate([
             'fecha' => 'required|date_format:Y-m-d'
         ]);
 
-        // Obtener las citas agendadas que no estén canceladas
         $horasOcupadas = Cita::whereDate('fecha_hora', $request->fecha)
             ->whereNotIn('estado', ['Cancelada', 'cancelada'])
             ->pluck('fecha_hora')
@@ -30,13 +28,11 @@ class CitaController extends Controller
                 return date('H:i', strtotime($dateTime));
             });
 
-        // Horarios de atención definidos por la veterinaria (8 AM a 4 PM)
         $horariosLaborales = [
             '08:00', '09:00', '10:00', '11:00', 
             '13:00', '14:00', '15:00', '16:00'
         ];
 
-        // Retornar solo los horarios que no están tomados
         $horariosDisponibles = array_values(array_diff($horariosLaborales, $horasOcupadas->toArray()));
 
         return response()->json([
@@ -67,21 +63,70 @@ class CitaController extends Controller
         ], 201);
     }
 
+    // Actualización / Reagendamiento desde la App Móvil (Cliente)
     public function update(Request $request, Cita $cita)
     {
         $fields = $request->validate([
             'estado' => 'required|string',
             'fecha_hora' => 'nullable|date',
             'motivo' => 'nullable|string',
-            'motivo_cancelacion' => 'nullable|string'
+            'motivo_cancelacion' => 'nullable|string',
+            'justificacion_cancelacion' => 'nullable|string'
         ]);
+
+        if ($request->input('estado') === 'Cancelada') {
+            $fields['cancelado_por'] = 'cliente';
+            $justificacion = $request->input('justificacion_cancelacion') ?? $request->input('motivo_cancelacion') ?? 'Cancelada por el cliente desde la App';
+            $fields['justificacion_cancelacion'] = $justificacion;
+            $fields['motivo_cancelacion'] = $justificacion;
+        } elseif ($request->input('estado') === 'Pendiente') {
+            // Caso Reagendamiento: se resetean los campos de cancelación
+            $fields['justificacion_cancelacion'] = null;
+            $fields['motivo_cancelacion'] = null;
+            $fields['cancelado_por'] = null;
+        }
 
         $cita->update($fields);
 
-        return response()->json([
-            'message' => 'Cita actualizada con éxito',
-            'cita' => $cita
-        ], 200);
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Cita actualizada con éxito',
+                'cita' => $cita
+            ], 200);
+        }
+
+        return back()->with('success', 'Estado de la cita actualizado con éxito.');
+    }
+
+    // Actualización desde el Panel Web (Administrador)
+    public function updateStatus(Request $request, $id)
+    {
+        $request->validate([
+            'estado' => 'required|string',
+            'justificacion_cancelacion' => 'nullable|string',
+            'motivo_cancelacion' => 'nullable|string'
+        ]);
+
+        $cita = Cita::findOrFail($id);
+        $cita->estado = $request->input('estado');
+
+        if ($request->input('estado') === 'Cancelada') {
+            $cita->cancelado_por = 'admin';
+            $justificacion = $request->input('justificacion_cancelacion') ?? $request->input('motivo_cancelacion') ?? 'Cancelada por la administración de VetCare';
+            $cita->justificacion_cancelacion = $justificacion;
+            $cita->motivo_cancelacion = $justificacion;
+        }
+
+        $cita->save();
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Estado actualizado con éxito',
+                'cita' => $cita
+            ], 200);
+        }
+
+        return back()->with('success', 'Estado de la cita actualizado correctamente.');
     }
 
     public function destroy(Cita $cita)

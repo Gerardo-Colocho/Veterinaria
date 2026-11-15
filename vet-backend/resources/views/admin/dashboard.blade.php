@@ -4,24 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Administración - VetCare</title>
-    <!-- Script de autenticación inmediata para evitar parpadeos -->
     <script>
         if (!localStorage.getItem('vet_token')) {
             window.location.href = '/login';
         }
     </script>
-    <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
             background-color: #F8FAFC;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        .navbar-custom {
-            background-color: #0D9488;
-        }
+        .navbar-custom { background-color: #0D9488; }
         .card-custom {
             border: none;
             border-radius: 16px;
@@ -34,18 +29,14 @@
             border-radius: 10px;
             font-weight: 600;
         }
-        .btn-teal:hover {
-            background-color: #0F766E;
-            color: #ffffff;
-        }
+        .btn-teal:hover { background-color: #0F766E; color: #ffffff; }
         .badge-pendiente { background-color: #EAB308; color: #000; }
-        .badge-completada { background-color: #16A34A; }
-        .badge-cancelada { background-color: #DC2626; }
+        .badge-completada { background-color: #16A34A; color: #fff; }
+        .badge-cancelada { background-color: #DC2626; color: #fff; }
     </style>
 </head>
 <body>
 
-    <!-- Header / Navbar con Navegación Completa -->
     <nav class="navbar navbar-expand-lg navbar-dark navbar-custom px-4 shadow-sm mb-4">
         <a class="navbar-brand fw-bold" href="/admin">🐾 VetCare Admin Panel</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -74,7 +65,6 @@
     </nav>
 
     <div class="container-fluid px-4">
-        <!-- Mensajes de Alerta -->
         @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
@@ -83,7 +73,6 @@
         @endif
 
         <div class="row g-4">
-            <!-- Columna Izquierda: Citas Solicitadas -->
             <div class="col-lg-7">
                 <div class="card card-custom p-4">
                     <h4 class="fw-bold text-dark mb-4">📅 Citas Solicitadas desde App Móvil</h4>
@@ -101,27 +90,53 @@
                             </thead>
                             <tbody>
                                 @forelse($citas as $cita)
+                                    @php
+                                        $estadoLower = strtolower($cita->estado);
+                                        $badgeClass = $estadoLower === 'completada' ? 'badge-completada' : ($estadoLower === 'cancelada' ? 'badge-cancelada' : 'badge-pendiente');
+                                        $esPendiente = $estadoLower === 'pendiente';
+                                        $justificacion = $cita->justificacion_cancelacion ?? $cita->motivo_cancelacion;
+                                    @endphp
                                     <tr>
-                                        <td class="fw-semibold">{{ $cita->mascota->dueno->name ?? 'Usuario' }}</td>
+                                        <td class="fw-semibold">{{ $cita->mascota->dueno->name ?? $cita->user->name ?? 'Usuario' }}</td>
                                         <td>🐾 {{ $cita->mascota->nombre ?? 'Mascota' }}</td>
                                         <td><small>{{ $cita->fecha_hora }}</small></td>
-                                        <td>{{ $cita->motivo }}</td>
+                                        
                                         <td>
-                                            @php
-                                                $estado = strtolower($cita->estado);
-                                                $badgeClass = $estado === 'completada' ? 'badge-completada' : ($estado === 'cancelada' ? 'badge-cancelada' : 'badge-pendiente');
-                                            @endphp
+                                            <div>{{ $cita->motivo }}</div>
+                                            @if($estadoLower === 'cancelada')
+                                                @if($cita->cancelado_por === 'admin')
+                                                    <small class="text-danger d-block fw-semibold" style="font-size: 0.75rem; margin-top: 3px;">
+                                                        🏢 Cancelada por la Veterinaria: {{ $justificacion ?? 'Motivo de agenda interna' }}
+                                                    </small>
+                                                @else
+                                                    <small class="d-block fw-semibold" style="font-size: 0.75rem; margin-top: 3px; color: #d97706;">
+                                                        👤 Cancelada por el Cliente: {{ $justificacion ?? 'Sin motivo especificado' }}
+                                                    </small>
+                                                @endif
+                                            @endif
+                                        </td>
+
+                                        <td>
                                             <span class="badge {{ $badgeClass }} px-2 py-1 text-capitalize">{{ $cita->estado }}</span>
                                         </td>
+                                        
                                         <td>
-                                            <form action="{{ route('admin.citas.status', $cita->id) }}" method="POST" class="d-inline">
-                                                @csrf
-                                                <select name="estado" class="form-select form-select-sm" onchange="this.form.submit()">
-                                                    <option value="Pendiente" {{ $cita->estado == 'Pendiente' ? 'selected' : '' }}>Pendiente</option>
-                                                    <option value="Completada" {{ $cita->estado == 'Completada' ? 'selected' : '' }}>Completada</option>
-                                                    <option value="Cancelada" {{ $cita->estado == 'Cancelada' ? 'selected' : '' }}>Cancelada</option>
+                                            @if($esPendiente)
+                                                <select class="form-select form-select-sm" onchange="cambiarEstadoCita(this, {{ $cita->id }})">
+                                                    <option value="Pendiente" selected>Pendiente</option>
+                                                    <option value="Completada">Completada</option>
+                                                    <option value="Cancelada">Cancelada</option>
                                                 </select>
-                                            </form>
+
+                                                <form id="form-completar-{{ $cita->id }}" action="{{ route('admin.citas.status', $cita->id) }}" method="POST" class="d-none">
+                                                    @csrf
+                                                    <input type="hidden" name="estado" value="Completada">
+                                                </form>
+                                            @else
+                                                <select class="form-select form-select-sm bg-light text-muted" disabled>
+                                                    <option selected>{{ $cita->estado }}</option>
+                                                </select>
+                                            @endif
                                         </td>
                                     </tr>
                                 @empty
@@ -135,7 +150,6 @@
                 </div>
             </div>
 
-            <!-- Columna Derecha: Registrar Diagnóstico -->
             <div class="col-lg-5">
                 <div class="card card-custom p-4">
                     <h4 class="fw-bold text-dark mb-4">🩺 Registrar Diagnóstico</h4>
@@ -173,7 +187,32 @@
         </div>
     </div>
 
-    <!-- Bootstrap 5 JS Bundle -->
+    <!-- Modal Flotante de Cancelación del Admin -->
+    <div class="modal fade" id="modalCancelarAdmin" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content card-custom p-3">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold text-dark">❌ Cancelar Cita Médica</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="formCancelarCitaAdmin" method="POST" action="">
+                    @csrf
+                    <div class="modal-body">
+                        <input type="hidden" name="estado" value="Cancelada">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-secondary">Motivo / Justificación de la Cancelación</label>
+                            <textarea name="justificacion_cancelacion" class="form-control" rows="3" required placeholder="Ej. El especialista no estará disponible en este horario."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="button" class="btn btn-light btn-sm px-3 fw-semibold" data-bs-dismiss="modal">Regresar</button>
+                        <button type="submit" class="btn btn-danger btn-sm px-3 fw-bold">Confirmar Cancelación</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         function logout() {
@@ -181,7 +220,28 @@
             localStorage.removeItem('vet_user');
             window.location.href = '/login';
         }
+
+        function cambiarEstadoCita(selectElement, citaId) {
+            const valor = selectElement.value;
+            
+            if (valor === 'Completada') {
+                if (confirm('¿Confirmas marcar esta cita como Completada? No se podrá modificar posteriormente.')) {
+                    document.getElementById('form-completar-' + citaId).submit();
+                } else {
+                    selectElement.value = 'Pendiente';
+                }
+            } else if (valor === 'Cancelada') {
+                const formModal = document.getElementById('formCancelarCitaAdmin');
+                formModal.action = '/admin/citas/' + citaId + '/status';
+                
+                const modalInstance = new bootstrap.Modal(document.getElementById('modalCancelarAdmin'));
+                modalInstance.show();
+
+                document.getElementById('modalCancelarAdmin').addEventListener('hidden.bs.modal', function () {
+                    selectElement.value = 'Pendiente';
+                }, { once: true });
+            }
+        }
     </script>
-    
 </body>
 </html>
