@@ -1,16 +1,18 @@
-
-Paso 1
+Paso 1: Clonar el repositorio principal
+Bash
 git clone https://github.com/Gerardo-Colocho/Veterinaria.git
 
-Paso 2
+Paso 2: Configuración del Backend (Laravel)
+Bash
+# Navegar al directorio del backend
 cd Veterinaria/vet-backend
 
-paso 3
+# Instalar dependencias de PHP
 composer install
 
-Paso 4
+# Crear el archivo de variables de entorno
 cp .env.example .env
-
+Editar el archivo .env recién creado para configurar la conexión a la base de datos con las siguientes credenciales locales:
 Fragmento de código
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
@@ -18,21 +20,38 @@ DB_PORT=3306
 DB_DATABASE=vet_db
 DB_USERNAME=root
 DB_PASSWORD=
-Generar la llave de la aplicación:
 
-Paso 5
+Ejecutar la inicialización del framework y la base de datos:
+Bash
+# Generar la llave de seguridad de la aplicación
 php artisan key:generate
 
-
-Paso 6
+# Construir la base de datos y ejecutar seeders (poblado de catálogos y admin por defecto)
 php artisan migrate:fresh --seed
 
-Paso 7
+# Levantar el servidor de desarrollo de Laravel
 php artisan serve
 
+Paso 3: Configuración del Frontend Móvil (Ionic) En una nueva terminal, acceder al directorio de la aplicación móvil:
 
-Paso 8 (PARA MOBILE)
 
+
+Bash
+cd Veterinaria/vet-mobile
+
+# Instalar dependencias de Node
 npm install
 
+# Levantar el servidor de desarrollo de Ionic
 ionic serve
+
+Paso 4: Configuración del Panel Web (Vue.js) En una nueva terminal, acceder al directorio del panel web:
+Bash
+
+cd Veterinaria/vet-web
+
+# Instalar dependencias de Node
+npm install
+
+# Levantar el entorno de desarrollo de Vue
+npm run dev
