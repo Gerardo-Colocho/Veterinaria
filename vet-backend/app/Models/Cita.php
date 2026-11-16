@@ -10,13 +10,15 @@ class Cita extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
-        'mascota_id',
-        'fecha_hora',
-        'motivo',
-        'estado',
-        'motivo_cancelacion' // <-- Agregado para permitir la justificación al cancelar
-    ];
+    'user_id',
+    'mascota_id',
+    'fecha_hora',
+    'motivo',
+    'estado',
+    'motivo_cancelacion',
+    'justificacion_cancelacion',
+    'cancelado_por' 
+];
 
     public function cliente()
     {
